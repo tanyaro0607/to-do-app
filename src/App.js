@@ -1,61 +1,33 @@
-import React, {useState, useEffect} from 'react'
+import React, {useState, useEffect, useReducer} from 'react'
 import TodoList from './TodoList'
 import {Context} from './context'
+import reducer from './reducer'
 
 export default function App() {
-  const [todos, setTodos] = useState([])
+  const [state, dispatch] = useReducer(reducer, JSON.parse 
+  (localStorage.getItem('todos')))
   const [todoTitle, setTodoTitle] = useState('')
-
-  //вызывается при старте компонента(загрузке стр)
-  useEffect(() => {
-    //получение данных, переданных локально
-    const raw = localStorage.getItem('todos') || []
-    setTodos(JSON.parse(raw))
-  }, [])
 
   //сохраненение списка
   useEffect(() => {
-    localStorage.setItem('todos', JSON.stringify(todos))
-  }, [todos])
+    localStorage.setItem('todos', JSON.stringify(state))
+  }, [state])
 
   //Доб. в список
   const addTodo = event => {
     //если нажата клавиша Enter
     if(event.key === 'Enter') {
-      // в setTodos передаем:
-      setTodos([
-        ...todos, //1)старые элементы
-        //2) новые элементы
-        {
-          id: Date.now(),
-          title: todoTitle,
-          completed: false
-        }
-      ])
+      dispatch({
+        type: 'add',
+        payload: todoTitle
+      })
       setTodoTitle('') //очищаем инпут
     }
   }
 
-  //удаление элемента
-  const removeTodo = id => {
-    setTodos(todos.filter(todo => {
-      return todo.id !== id
-    }))
-  }
-
-  //изменение состояния checked
-  const toggleTodo = id => {
-    setTodos(todos.map(todo => {
-      if (todo.id === id) {
-        todo.completed = !todo.completed
-      }
-      return todo
-    }))
-  }
-
   return (
     <Context.Provider value={{
-      removeTodo, toggleTodo
+      dispatch //позволяет изм состояние
     }}>
       <div className="container">
         <h1>Todo app</h1>
@@ -70,7 +42,7 @@ export default function App() {
             <label>Todo name</label>
           </div>
 
-          <TodoList todos={todos} />
+          <TodoList todos={state} />
       </div>
     </Context.Provider>
   );
