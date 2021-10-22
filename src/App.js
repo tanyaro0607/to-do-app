@@ -1,12 +1,21 @@
-import React, {useState} from 'react'
+import React, {useState, useEffect} from 'react'
 import TodoList from './TodoList'
 
 export default function App() {
-  const [todos, setTodos] = useState([
-    {id: 1, title: 'First todo', completed: false},
-    {id: 2, title: 'Second todo', completed: true},
-  ])
+  const [todos, setTodos] = useState([])
   const [todoTitle, setTodoTitle] = useState('')
+
+  //вызывается при старте компонента(загрузке стр)
+  useEffect(() => {
+    //получение данных, переданных локально
+    const raw = localStorage.getItem('todos') || []
+    setTodos(JSON.parse(raw))
+  }, [])
+
+  //сохраненение списка
+  useEffect(() => {
+    localStorage.setItem('todos', JSON.stringify(todos))
+  }, [todos])
 
   //Доб. в список
   const addTodo = event => {
